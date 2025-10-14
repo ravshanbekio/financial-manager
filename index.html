@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remos Dashboard UI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f101c;
+            --card-color: #202236;
+            --primary-text: #ffffff;
+            --secondary-text: #a0a3bd;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-orange: #f39c12;
+            --accent-blue: #3498db;
+            --border-radius: 16px;
+            --border-color: rgba(160, 163, 189, 0.2);
+            --donut-color-1: #6a5acd;
+            --donut-color-2: #3498db;
+            --donut-color-3: #2ecc71;
+            --donut-color-4: #add8e6;
+            --donut-color-5: #ffebcd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            min-height: 100vh;
+            /* REMOVED padding from body */
+        }
+
+        /* NEW: Main container for centering and padding */
+        .container {
+            width: 100%;
+            max-width: 1400px; /* Optional: limits max width on very large screens */
+            margin: 0 auto;   /* Centers the container */
+            padding: 1.5rem;   /* Padding is now here */
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header__logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .header__logo-icon {
+            background-color: var(--accent-blue);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .dashboard {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            background-color: var(--card-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .card__header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .card__icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .card__icon--sales { background-color: rgba(52, 152, 219, 0.2); color: var(--accent-blue); }
+        .card__icon--income { background-color: rgba(243, 156, 18, 0.2); color: var(--accent-orange); }
+        .card__icon--orders { background-color: rgba(160, 163, 189, 0.2); color: var(--secondary-text); }
+        .card__icon--visitors { background-color: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
+        .card__title {
+            color: var(--secondary-text);
+            font-weight: 500;
+        }
+        .card__body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .card__value {
+            font-size: 2.25rem;
+            font-weight: 600;
+            word-break: break-all; /* Helps prevent overflow if number is too long */
+        }
+        .card__chart {
+            width: 100%;
+            height: 60px;
+        }
+        .sale-category-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .sale-category-card__title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .sale-category-card__summary {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary__top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .summary__date {
+            font-size: 0.85rem;
+            color: var(--secondary-text);
+        }
+        .summary__dropdown { position: relative; display: inline-block; }
+        .summary__dropdown select {
+            background-color: rgba(160, 163, 189, 0.1);
+            color: var(--primary-text); border: none; border-radius: 8px;
+            padding: 0.4rem 0.8rem; font-size: 0.85rem; appearance: none;
+            -webkit-appearance: none; cursor: pointer; padding-right: 2rem;
+        }
+        .summary__dropdown::after {
+            content: '⌄'; position: absolute; right: 10px; top: 50%;
+            transform: translateY(-50%); color: var(--secondary-text); pointer-events: none;
+        }
+        .summary__value-row {
+            display: flex; align-items: baseline; gap: 0.5rem;
+        }
+        .summary__total-value { font-size: 1.8rem; font-weight: 600; }
+        .summary__change { font-size: 1rem; font-weight: 600; color: var(--accent-green); }
+        .donut-chart-container {
+            position: relative; width: 100%; max-width: 300px;
+            aspect-ratio: 1 / 1; margin: 1.5rem auto;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .donut-chart-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .donut-chart-center-text {
+            position: absolute; text-align: center; pointer-events: none;
+            top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;
+        }
+        .donut-chart-center-text__label { font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+        .donut-chart-center-text__value { font-size: 1.2rem; font-weight: 500; color: var(--secondary-text); }
+        .chart-legend {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem; margin-top: 1.5rem;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.9rem; color: var(--secondary-text);
+        }
+        .legend-color-box { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+        .recent-orders-card { gap: 1rem; }
+        .orders-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+        .order-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
+        }
+        .order-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .order-item__name {
+            white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; max-width: 70%;
+        }
+        .order-item__value { font-weight: 500; color: var(--secondary-text); }
+        .recent-orders__footer {
+            display: flex; justify-content: space-between; align-items: center;
+            color: var(--secondary-text); font-size: 0.9rem; margin-top: auto;
+        }
+        .pagination { display: flex; align-items: center; gap: 0.5rem; }
+        .pagination__btn {
+            background-color: transparent; border: none; color: var(--secondary-text);
+            font-weight: 600; cursor: pointer; width: 32px; height: 32px;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .pagination__btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .pagination__btn--active { background-color: var(--accent-blue); color: var(--primary-text); }
+        @media (min-width: 500px) { .chart-legend { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 768px) { .dashboard { grid-template-columns: repeat(2, 1fr); } .large-card { grid-column: 1 / -1; } }
+        @media (min-width: 1200px) {
+             .dashboard { grid-template-columns: repeat(4, 1fr); }
+             .small-card { grid-column: span 2; }
+             .large-card { grid-column: span 2; }
+             .container { padding: 2rem 4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <div class="header__logo">
+                <span class="header__logo-icon">YR</span>
+                Yangicha Rivoj
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <article class="stat-card small-card">
+                <div class="card__header">
+                    <div class="card__icon card__icon--sales">🛍️</div>
+                    <h2 class="card__title">Chiqimlar</h2>
+                </div>
+                <div class="card__body">
+                    <p class="card__value" id="expense-value">Loading...</p>
+                </div>
+                <div class="card__chart">
+                    <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none"><defs><linearGradient id="greenGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color: var(--accent-green); stop-opacity: 0.5" /><stop offset="100%" style="stop-color: var(--accent-green); stop-opacity: 0.05" /></linearGradient></defs><path d="M0 25 Q 15 10, 30 20 T 60 22 T 90 15 L 100 15 L 100 40 L 0 40 Z" fill="url(#greenGradient)" /><path d="M0 25 Q 15 10, 30 20 T 60 22 T 90 15" stroke="var(--accent-green)" fill="none" stroke-width="2" stroke-linecap="round" /></svg>
+                </div>
+            </article>
+
+            <article class="stat-card small-card">
+                <div class="card__header">
+                    <div class="card__icon card__icon--income">💰</div>
+                    <h2 class="card__title">Kirimlar</h2>
+                </div>
+                <div class="card__body">
+                    <p class="card__value" id="income-value">Loading...</p>
+                </div>
+                <div class="card__chart">
+                    <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none"><defs><linearGradient id="orangeGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color: var(--accent-orange); stop-opacity: 0.5" /><stop offset="100%" style="stop-color: var(--accent-orange); stop-opacity: 0.05" /></linearGradient></defs><path d="M0 20 Q 15 35, 30 25 T 60 20 T 90 28 L 100 28 L 100 40 L 0 40 Z" fill="url(#orangeGradient)" /><path d="M0 20 Q 15 35, 30 25 T 60 20 T 90 28" stroke="var(--accent-orange)" fill="none" stroke-width="2" stroke-linecap="round" /></svg>
+                </div>
+            </article>
+
+            <article class="stat-card small-card">
+                <div class="card__header">
+                    <div class="card__icon card__icon--orders">📄</div>
+                    <h2 class="card__title">Qarzlar</h2>
+                </div>
+                <div class="card__body">
+                    <p class="card__value" id="debt-value">Loading...</p>
+                </div>
+                <div class="card__chart">
+                    <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none"><defs><linearGradient id="grayGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color: var(--secondary-text); stop-opacity: 0.5" /><stop offset="100%" style="stop-color: var(--secondary-text); stop-opacity: 0.05" /></linearGradient></defs><path d="M0 15 Q 15 25, 30 18 T 60 20 T 90 15 L 100 15 L 100 40 L 0 40 Z" fill="url(#grayGradient)" /><path d="M0 15 Q 15 25, 30 18 T 60 20 T 90 15" stroke="var(--secondary-text)" fill="none" stroke-width="2" stroke-linecap="round" /></svg>
+                </div>
+            </article>
+
+            <article class="stat-card small-card">
+                <div class="card__header">
+                    <div class="card__icon card__icon--visitors">💳</div>
+                    <h2 class="card__title">Investitsiyalar</h2>
+                </div>
+                <div class="card__body">
+                    <p class="card__value" id="investment-value">Loading...</p>
+                </div>
+                <div class="card__chart">
+                    <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none"><defs><linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color: var(--accent-blue); stop-opacity: 0.5" /><stop offset="100%" style="stop-color: var(--accent-blue); stop-opacity: 0.05" /></linearGradient></defs><path d="M0 30 Q 15 10, 30 20 T 60 15 T 90 25 L 100 25 L 100 40 L 0 40 Z" fill="url(#blueGradient)" /><path d="M0 30 Q 15 10, 30 20 T 60 15 T 90 25" stroke="var(--accent-blue)" fill="none" stroke-width="2" stroke-linecap="round" /></svg>
+                </div>
+            </article>
+            
+            <article class="stat-card sale-category-card large-card">
+                <div class="sale-category-card__header">
+                    <h2 class="sale-category-card__title">Kategoriya bo'yicha chiqimlar</h2>
+                </div>
+                <div class="sale-category-card__summary">
+                    <div class="summary__top">
+                        <p class="summary__date">10 sentyabrdan  10-oktyabrgacha</p>
+                        <div class="summary__dropdown">
+                            <select name="time-range" id="time-range-select"><option value="week">Week</option><option value="month">Month</option><option value="year">Year</option></select>
+                        </div>
+                    </div>
+                    <div class="summary__value-row">
+                        <p class="summary__total-value">5 000 000 so'm</p>
+                        <p class="summary__change">▲ 0.56%</p>
+                    </div>
+                </div>
+                <div class="donut-chart-container">
+                    <svg class="donut-chart-svg" viewBox="0 0 100 100"><g id="donut-slices"></g><circle cx="50" cy="50" r="25" fill="var(--card-color)" /></svg>
+                </div>
+                <div class="chart-legend"></div>
+            </article>
+
+            <article class="stat-card recent-orders-card large-card">
+                <ul class="orders-list">
+                    <li class="order-item"><span class="order-item__name">Bozorlik qildim</span><span class="order-item__value">350 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Mashinamga yog' quydim</span><span class="order-item__value">500 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Stomatologga bordim</span><span class="order-item__value">150 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Sinfdoshlarimga osh qilib berdim</span><span class="order-item__value">800 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Ishxonadegilar bilan dam olishga bordik</span><span class="order-item__value">247 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Ishxonadegilar bilan dam olishga bordik</span><span class="order-item__value">247 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Ishxonadegilar bilan dam olishga bordik</span><span class="order-item__value">247 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Ishxonadegilar bilan dam olishga bordik</span><span class="order-item__value">247 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Ishxonadegilar bilan dam olishga bordik</span><span class="order-item__value">247 000 so'm</span></li>
+                    <li class="order-item"><span class="order-item__name">Ishxonadegilar bilan dam olishga bordik</span><span class="order-item__value">247 000 so'm</span></li>
+                </ul>
+                <div class="recent-orders__footer">
+                    <span></span>
+                    <nav class="pagination" aria-label="pagination"><button class="pagination__btn">⟨</button><button class="pagination__btn">1</button><button class="pagination__btn pagination__btn--active">2</button><button class="pagination__btn">3</button><button class="pagination__btn">⟩</button></nav>
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <script>
+        const timeRangeSelect = document.getElementById('time-range-select');
+        const chartData = [
+            { label: 'Oziq-ovqat', percentage: 25, color: 'var(--donut-color-1)' },
+            { label: 'Transport', percentage: 20, color: 'var(--donut-color-2)' },
+            { label: 'Sog\'liq', percentage: 15, color: 'var(--donut-color-3)' },
+            { label: 'Aksessuar', percentage: 15, color: 'var(--donut-color-4)' },
+            { label: 'Sport', percentage: 25, color: 'var(--donut-color-5)' },
+        ];
+        function createDonutSlice(cX,cY,oR,iR,sA,eA){const sOX=cX+oR*Math.cos(sA*Math.PI/180),sOY=cY+oR*Math.sin(sA*Math.PI/180),eOX=cX+oR*Math.cos(eA*Math.PI/180),eOY=cY+oR*Math.sin(eA*Math.PI/180),sIX=cX+iR*Math.cos(eA*Math.PI/180),sIY=cY+iR*Math.sin(eA*Math.PI/180),eIX=cX+iR*Math.cos(sA*Math.PI/180),eIY=cY+iR*Math.sin(sA*Math.PI/180);return`M ${sOX} ${sOY} A ${oR} ${oR} 0 ${eA-sA>180?1:0} 1 ${eOX} ${eOY} L ${sIX} ${sIY} A ${iR} ${iR} 0 ${eA-sA>180?1:0} 0 ${eIX} ${eIY} Z`}
+        function renderDonutChart(){const sG=document.getElementById('donut-slices'),lC=document.querySelector('.chart-legend');if(!sG||!lC)return;sG.innerHTML='';lC.innerHTML='';let cA=0;chartData.forEach(s=>{const sA=(s.percentage/100)*360,eA=cA+sA,pD=createDonutSlice(50,50,45,25,cA,eA),p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',pD);p.setAttribute('fill',s.color);sG.appendChild(p);cA=eA;const lI=document.createElement('div');lI.classList.add('legend-item');lI.innerHTML=`<span class="legend-color-box" style="background-color:${s.color};"></span> ${s.label}`;lC.appendChild(lI)})}
+        timeRangeSelect.addEventListener('change', e=>{alert(`Chart data would update for: ${e.target.value}`);renderDonutChart()});
+
+        function formatCurrency(number) { return `${number.toLocaleString('fr-FR')} so'm`; }
+        
+        async function loadStatistics() {
+            let chatId;
+            try {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                chatId = tg.initDataUnsafe.user.id;
+            } catch (error) {
+                console.error("Telegram Web App data not found. Using fallback chat_id.", error);
+                chatId = 123456789; // Fallback for testing in a regular browser
+            }
+
+            if (!chatId) {
+                console.error("Could not determine chat_id.");
+                document.getElementById('income-value').textContent = 'Error';
+                document.getElementById('expense-value').textContent = 'Error';
+                document.getElementById('debt-value').textContent = 'Error';
+                document.getElementById('investment-value').textContent = 'Error';
+                return;
+            }
+
+            const apiUrl = `http://finzo.work.gd/get_statistics?chat_id=${chatId}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                const data = await response.json();
+                document.getElementById('income-value').textContent = formatCurrency(data.income);
+                document.getElementById('expense-value').textContent = formatCurrency(data.expense);
+                document.getElementById('debt-value').textContent = formatCurrency(data.debt);
+                document.getElementById('investment-value').textContent = formatCurrency(data.investment);
+            } catch (error) {
+                console.error("Failed to fetch statistics:", error);
+                document.getElementById('income-value').textContent = 'Failed to load';
+                document.getElementById('expense-value').textContent = 'Failed to load';
+                document.getElementById('debt-value').textContent = 'Failed to load';
+                document.getElementById('investment-value').textContent = 'Failed to load';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDonutChart();
+            loadStatistics();
+        });
+    </script>
+
+</body>
+</html>

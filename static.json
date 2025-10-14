@@ -1,0 +1,7 @@
+{
+  "headers": {
+    "/**": {
+      "Content-Security-Policy": "connect-src 'self' https://*.static.domains https://static.app http://finzo.work.gd https://finzo.work.gd"
+    }
+  }
+}
