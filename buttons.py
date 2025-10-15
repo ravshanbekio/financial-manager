@@ -1,4 +1,11 @@
+import os
+from dotenv import load_dotenv
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
+
+load_dotenv()
+
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+
 
 BUTTONS_LIST = ["set_limit"]
 
@@ -8,7 +15,7 @@ async def button(chat_id: int):
             [
                 InlineKeyboardButton(
                     text="📃 Hisobot",
-                    web_app=WebAppInfo(url=f"https://finzo-frontend.work.gd/dashboard?chat_id={chat_id}")
+                    web_app=WebAppInfo(url=f"{FRONTEND_URL}/dashboard?chat_id={chat_id}")
                 )
             ],
             [
