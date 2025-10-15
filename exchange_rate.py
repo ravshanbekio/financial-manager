@@ -1,7 +1,11 @@
 import aiohttp
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 
-CBU_API_URL = "https://cbu.uz/uz/arkhiv-kursov-valyut/json/"
+load_dotenv()
+
+CBU_API_URL = os.getenv("CBU_API_URL")
 
 
 async def get_exchange_rates():
