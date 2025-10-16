@@ -3,7 +3,6 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, W
 from aiogram.filters import StateFilter
 from datetime import datetime
 from dotenv import load_dotenv
-import openai
 import json
 import os
 
