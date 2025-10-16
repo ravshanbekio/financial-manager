@@ -64,7 +64,23 @@ async def finance_prompt(text: str):
         - If there is only one financial action, still wrap it inside an array with one object.
         - If the message is not about money, return exactly: 
         [{{"error_code":400, "message":"Could not detech speech"}}]
+        
+        🧠 CATEGORY SYSTEM:
 
+        Each message should belong to a category (e.g. Taksi, Oziq-ovqat, Ish haqi, Bitcoin, Ijara, etc.).
+        Category names must be in Uzbek.
+        Derive the category meaningfully from the text or description.
+        If the user already has a similar previous record, reuse the same category name (don’t create new duplicates).
+        Examples:
+        “Taksi uchun 20 ming to‘ladim” → category: “Taksi”
+        “Bugun 15 ming taksiga ketdi” → category: “Taksi”
+        “Bitcoin sotvoldim” → category: “Bitcoin”
+        “USDT oldim” → category: “USDT”
+        “Ish haqi keldi” → category: “Ish haqi”
+        “Do‘kondan non oldim” → category: “Oziq-ovqat”
+        “Ijara to‘ladim” → category: “Ijara”
+        If a new word or concept appears that doesn’t match any existing category, create a new category in Uzbek, but prefer using previously known ones when possible.
+        
         Respond ONLY in ARRAY with this format (dict inside the list):
         If type is one of the these - income/expense/investment, give that response:
         [
@@ -74,6 +90,7 @@ async def finance_prompt(text: str):
                 "currency: "so'm/usd/rubl",
                 "amount_in_som": 0,
                 "type": "income/expense/investment",
+                "category": "",
                 "date": "2025-10-16" (if the user says exact date return that date),
             }}
         ],
