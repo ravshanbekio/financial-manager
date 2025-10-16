@@ -2,7 +2,7 @@ async def specifyTransactionText(type, date, amount, currency, description):
     text = ""
     if type == "income":
         text = f"""
-*✅ Hisobotga qo'shildi!*
+*✅ Kirimlarga qo'shildi!*
 
 *Sana:* {date}
 *Summa:* {amount:,} {currency}
@@ -47,4 +47,8 @@ async def specifyDebtText(type, date, amount, currency, description, return_date
 *Qaytarish sanasi:* {return_date if return_date is not None else "yozilmadi"}
         """.replace(",", " ")
         
+    return text
+
+async def WarningText(amount: int):
+    text = f"⚠️ Sizda {amount:,} so'mdan kam mablag' qoldi. Chiqimlarni kamaytirishni tavsiya qilamiz".replace(","," ")
     return text

@@ -17,7 +17,6 @@ load_dotenv()
 
 text_controller_router = Router()
 
-openai.api_key = os.getenv("OPENAI_KEY")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
@@ -41,17 +40,19 @@ async def text_controller(message: Message):
         warning_text = f"""
         *⚠️ Sizning xarajatlaringiz limitdan oshib ketdi!*
         
-Ortiqcha summa: {data['excess_amount']:,} so'm
+Ortiqcha summa: {data['excess_amount']:,.2f} so'm
 Limit: {data['limit']:,} so'm
         """.replace(",", " ")
         await message.answer(warning_text, parse_mode="Markdown")
+    if data.get("warning") is not None:
+        await message.answer(data.get("warning"))
         
     main_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                   text="📝 O'zgartirish",
-                  callback_data=f"change_data_"
+                  web_app=WebAppInfo(url=f"{FRONTEND_URL}/update?chat_id={message.chat.id}")
               )  
             ],
             [

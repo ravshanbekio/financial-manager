@@ -1,11 +1,13 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 from utils.utils import create_user, get_user, add_data
 from buttons import button
+from .limit import LimitState
 
 class IncomeState(StatesGroup):
     income_state = State()
@@ -51,8 +53,16 @@ async def handle_budget(message: Message, state: FSMContext):
         ]
         await add_data(chat_id=message.chat.id, data=data)
         main_button = await button(chat_id=message.chat.id)
-        await message.answer("✅ Tayyor. Endi botdan to'liq foydalanishingiz mumkin", reply_markup=main_button)
-        await state.set_state(None)
+        
+        builder = InlineKeyboardBuilder()
+        for i in range(1, 11):
+            builder.button(
+                text=f"{i} million so'm",
+                callback_data=f"{i*1000000}"
+            )
+        builder.adjust(2)
+        await message.answer("Endi, ushbu oy uchun qo'ymoqchi bo'lgan limitingizni kiriting", reply_markup=builder.as_markup())
+        await state.set_state(LimitState.ask_limit_amount)
         
     else:
         await message.answer("❌ Faqat son yuborishingiz kerak! Misol uchun (so'mda): 1 000 000")

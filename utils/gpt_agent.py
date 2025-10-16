@@ -1,8 +1,12 @@
 import re
 import openai
+import os
 from datetime import datetime
 
 from .exchange_rate import get_exchange_rates
+
+openai.api_key = os.getenv("OPENAI_KEY")
+
 
 async def finance_prompt(text: str):
     need_rates = bool(re.search(r"\$|usd|dollar|dollr|do'llr|dollar|do'llar|rub|₽", text.lower()))
@@ -17,22 +21,28 @@ async def finance_prompt(text: str):
         
     system_prompt = """
         You are a financial text parser. 
-        The user message is in Uzbek and always about money (income, expense, loan, investment, credit, etc.).
-        Accept only uzbek, if user enters the message in another language, return that: [{{"clean_text":"Iltimos, qayta yuboring."}}]
+        The user message is in Uzbek and always about money (income, expense, debt, lent, investment, credit, etc.).
 
+        ⚠️ IMPORTANT:
+        - Always include the **original user message** in the field `"description"`.
+        - Never clean, translate, or modify it — keep it *exactly* as user wrote.
+        
         Your job:
-        - Clean up the text so it's grammatically correct in Uzbek.
         - Detect if there are one or more financial actions in the message.
         - For each financial action:
-            - Extract the cleaned text.
             - Extract the amount (number + currency).
             - Detect the currency (so'm, USD, RUB).
             - Decide if it’s income, expense, debt, loan, or investment.
                 * IMPORTANT: Do not just guess. Look at the **full context**, including previous words and sentence meaning, before deciding.
-                * If user says they "spent", "sotib oldim", "to'ladim", "oldim" → this is EXPENSE.
-                * If user says they "pul oldim", "ish haqi keldi", "pul keldi" → this is INCOME.
-                * If user says they "qarz oldim" or "qarz berdim" → classify correctly as LOAN (given) or DEBT (taken).
-                * If it is about "sarmoya", "investitsiya qildim", "kiritdim", "pul tikdim" → INVESTMENT.
+                * If user only says they "spent", "sotib oldim", "to'ladim", "oldim", "keldim" → this is EXPENSE.
+                * If user only says they "pul oldim", "ish haqi keldi", "pul keldi" → this is INCOME.
+                * If user only says they "qarz oldim", "qarz bo'ldim" → classify correctly as borrowed (taken).
+                * If user only says they "qarz berdim" "berdim" -> classify correctly as lent (given).
+                * If it is about "sarmoya", "investitsiya qildim", "kiritdim", "pul tikdim" → INVESTMENT. 
+                * However, 
+                ⚙️ Additional rule for crypto and investment detection:
+                - If the user mentions words like "bitcoin", "usdt", "kripto", "crypto", "aksiy(a/alar)", "fond", "sarmoya", "investitsiya", "kiritdim", "pul tikdim" — treat it as **investment**, even if they used verbs like "sotib oldim" or "sotvoldim".
+
             - If it’s a debt, write its return date if user told it:
                 - If user says "ertaga" → return today + 1 day.
                 - If user says "indin" → return today + 2 days.
@@ -56,7 +66,6 @@ async def finance_prompt(text: str):
         [{{"error_code":400, "message":"Could not detech speech"}}]
 
         Respond ONLY in ARRAY with this format (dict inside the list):
-        Change the response depending on the message type (available: income, expense, borrowed, lent, investment). 
         If type is one of the these - income/expense/investment, give that response:
         [
             {{
@@ -72,7 +81,7 @@ async def finance_prompt(text: str):
         If type is one of these - debt/loan, return that response:
         [
             {{
-                "description": "",
+                "description": "...",
                 "amount": 0,
                 "currency": "so'm/usd/rubl",
                 "amount_in_som": 0,

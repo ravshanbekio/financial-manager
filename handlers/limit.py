@@ -53,8 +53,9 @@ async def catch_limit(message: Message, state: FSMContext):
     else:
         await message.answer("❌ Faqat son yuborishingiz kerak! Misol uchun: 1 000 000")
         
-@limit_router.callback_query(F.data, F.data!="set_limit")
+@limit_router.callback_query(F.data, F.data!="set_limit", F.data.not_contains("change_data_"))
 async def handle_callback_limit(callback: CallbackQuery, state: FSMContext):
+    await callback.message.delete()
     main_button = await button(callback.message.chat.id)
     limit = int(callback.data)
     await update_limit(chat_id=callback.message.chat.id, limit=limit)

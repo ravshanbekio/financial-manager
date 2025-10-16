@@ -3,6 +3,8 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 
+from texts import WarningText
+
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -40,7 +42,7 @@ async def update_user(user_id: int, json: dict):
 async def create_debt(user_id: int, json: dict):
     db = await connect()
     debt_id = await db.fetchval(
-        "INSERT INTO debts (user_id, description, amount, return_date, type) VALUES($1, $2, $3, $4, $5)",
+        "INSERT INTO debts (user_id, description, amount, return_date, type) VALUES($1, $2, $3, $4, $5) RETURNING id",
         user_id, json.get('description'), json.get('amount_in_som'), datetime.strptime(json.get('return_date'), "%Y-%m-%d").date() if json.get('return_date') != '' else None, json.get("type")
     )
     await db.close()
@@ -48,9 +50,9 @@ async def create_debt(user_id: int, json: dict):
     
 async def create_transaction(user_id: int, json: dict):
     db = await connect()
-    transaction_id = await db.execute(
-        "INSERT INTO transactions (user_id, description, amount, type, created_at, date, created_at) VALUES($1, $2, $3, $4, $5, $6, $7)",
-        user_id, json.get('description'), json.get('amount_in_som'), json.get('type'), json.get("category"), json.get("date"), datetime.today().date()
+    transaction_id = await db.fetchval(
+        "INSERT INTO transactions (user_id, description, amount, type, category, date, created_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+        user_id, json.get('description'), json.get('amount_in_som'), json.get('type'), json.get("category"), datetime.strptime(json.get("date"), "%Y-%m-%d"), datetime.today().date()
     )
     await db.close()
     return transaction_id
@@ -59,6 +61,7 @@ async def add_data(chat_id: int, data: list):
     user = await get_user(chat_id=chat_id)
     updated_balance = user['balance']
     exceeded_amount = 0
+    warning_text = None
     added_ids = []
 
     for json in data:
@@ -82,6 +85,15 @@ async def add_data(chat_id: int, data: list):
             elif json.get("type") in ["expense", "investment"]:
                 updated_balance -= json['amount_in_som']
                 
+                if updated_balance < 1000000:
+                    warning_text = await WarningText(amount=1000000)
+                elif updated_balance < 500000:
+                    warning_text = await WarningText(amount=500000)
+                elif updated_balance < 100000:
+                    warning_text = await WarningText(amount=100000)
+                else: 
+                    pass
+                
             await update_user(user_id=user['id'], json={"balance": updated_balance})
             if updated_balance < user['limited_balance']:
                 exceeded_amount += json['amount_in_som']
@@ -90,6 +102,7 @@ async def add_data(chat_id: int, data: list):
 
     return {
         "response": "warning" if updated_balance < user['limited_balance'] else "ok",
+        "warning": warning_text,
         "excess_amount": updated_balance - user['limited_balance'],
         "limit": user['limit'],
         "ids": added_ids
