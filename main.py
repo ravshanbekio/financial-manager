@@ -5,7 +5,7 @@ import sys
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 
-from handlers import start, voice_controller, text_controller, limit
+from handlers import start, text_controller, limit
 
 load_dotenv()
 
@@ -15,7 +15,7 @@ dp = Dispatcher()
 
 # register routers
 dp.include_router(start.start_router)
-dp.include_router(voice_controller.voice_controller_router)
+#dp.include_router(voice_controller.voice_controller_router)
 dp.include_router(text_controller.text_controller_router)
 dp.include_router(limit.limit_router)
 

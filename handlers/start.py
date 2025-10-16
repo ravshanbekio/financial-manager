@@ -4,7 +4,7 @@ from aiogram.types import Message
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-from utils import create_user, get_user, add_data
+from utils.utils import create_user, get_user, add_data
 from buttons import button
 
 class IncomeState(StatesGroup):

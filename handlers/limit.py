@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-from utils import update_limit, get_user
+from utils.utils import update_limit, get_user
 from buttons import BUTTONS_LIST, button
 
 class LimitState(StatesGroup):

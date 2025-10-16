@@ -1,31 +1,50 @@
-async def specify_text(category, date, amount, currency, description, return_date = None):
+async def specifyTransactionText(type, date, amount, currency, description):
     text = ""
-    if category == "income":
+    if type == "income":
         text = f"""
 *✅ Hisobotga qo'shildi!*
 
-*Kirim:*
 *Sana:* {date}
 *Summa:* {amount:,} {currency}
 *Izoh:* {description}
         """.replace(",", " ")
-    if category in ["expense", "loan", "investment"]:
+    elif type == "expense":
         text = f"""
 *✅ Chiqimlar ro'yxatiga qo'shildi!*
 
-*Chiqim:*
 *Sana:* {date}
 *Summa:* {amount:,} {currency}
 *Izoh:* {description}
         """.replace(",", " ")
-    if category == "debt":
+    elif type == "investment":
         text = f"""
-*✅ Qarzlar ro'yxatiga qo'shildi!*
+*✅ Investitsiyalar ro'yxatiga qo'shildi!*
 
-*Qarz:*
 *Sana:* {date}
 *Summa:* {amount:,} {currency}
 *Izoh:* {description}
-*Qaytarish sanasi:* {return_date if return_date is not None else ""}
         """.replace(",", " ")
+        
+    return text
+
+async def specifyDebtText(type, date, amount, currency, description, return_date = None):
+    if type == "borrowed":
+        text = f"""
+*✅ Olingan qarzlar ro'yxatiga qo'shildi!*
+
+*Sana:* {date if date is not None else "yozilmadi"}
+*Summa:* {amount:,} {currency}
+*Izoh:* {description}
+*Qaytarish sanasi:* {return_date if return_date is not None else "yozilmadi"}
+        """.replace(",", " ")
+    elif type == "lent":
+        text = f"""
+*✅ Berilgan qarzlar ro'yxatiga qo'shildi!*
+
+*Sana:* {date if date is not None else "yozilmadi"}
+*Summa:* {amount:,} {currency}
+*Izoh:* {description}
+*Qaytarish sanasi:* {return_date if return_date is not None else "yozilmadi"}
+        """.replace(",", " ")
+        
     return text

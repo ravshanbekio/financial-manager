@@ -39,58 +39,60 @@ async def update_user(user_id: int, json: dict):
         
 async def create_debt(user_id: int, json: dict):
     db = await connect()
-    await db.execute(
-        "INSERT INTO debts (user_id, description, amount, return_date) VALUES($1, $2, $3, $4)",
-        user_id, json['clean_text'], json['amount_in_som'], datetime.strptime(json['return_date'], "%Y-%m-%d").date() if json['return_date'] != '' else None
+    debt_id = await db.fetchval(
+        "INSERT INTO debts (user_id, description, amount, return_date, type) VALUES($1, $2, $3, $4, $5)",
+        user_id, json.get('description'), json.get('amount_in_som'), datetime.strptime(json.get('return_date'), "%Y-%m-%d").date() if json.get('return_date') != '' else None, json.get("type")
     )
     await db.close()
+    return debt_id
     
-async def create_expense(user_id: int, json: dict):
+async def create_transaction(user_id: int, json: dict):
     db = await connect()
-    await db.execute(
-        "INSERT INTO expenses (user_id, description, amount, category) VALUES($1, $2, $3, $4)",
-        user_id, json['clean_text'], json['amount_in_som'], json['category'] 
+    transaction_id = await db.execute(
+        "INSERT INTO transactions (user_id, description, amount, type, created_at, date, created_at) VALUES($1, $2, $3, $4, $5, $6, $7)",
+        user_id, json.get('description'), json.get('amount_in_som'), json.get('type'), json.get("category"), json.get("date"), datetime.today().date()
     )
     await db.close()
+    return transaction_id
     
-async def create_income(user_id: int, json: dict):
-    db = await connect()
-    await db.execute(
-        "INSERT INTO incomes (user_id, description, category, amount) VALUES($1, $2, $3, $4)",
-        user_id, json['clean_text'], json['category'], json['amount_in_som']
-    )
-    await db.close()
-        
 async def add_data(chat_id: int, data: list):
     user = await get_user(chat_id=chat_id)
-    updated_balance = user['balance']   # start with current balance
+    updated_balance = user['balance']
     exceeded_amount = 0
+    added_ids = []
 
     for json in data:
-        if json['category'] == "debt":
-            await create_debt(user_id=user['id'], json=json)
-            updated_balance -= json['amount_in_som']
+        if json.get("type") in ["borrowed", "lent"]:
+            debt_id = await create_debt(user_id=user['id'], json=json)
+            added_ids.append(debt_id)
+            
+            if json.get("type") == "borrowed":
+                updated_balance += json.get("amount_in_som")
+            elif json.get("type") == "lent":
+                updated_balance -= json.get("amount_in_som")
+                
             await update_user(user_id=user['id'], json={"balance": updated_balance})
-
-        elif json['category'] in ["expense", "loan", "investment"]:
-            await create_expense(user_id=user['id'], json=json)
-            updated_balance -= json['amount_in_som']
+            
+        elif json.get("type") in ["income", "expense", "investment"]:
+            transaction_id = await create_transaction(user_id=user['id'], json=json)
+            added_ids.append(transaction_id)
+            
+            if json.get("type") == "income":
+                updated_balance += json.get("amount_in_som")
+            elif json.get("type") in ["expense", "investment"]:
+                updated_balance -= json['amount_in_som']
+                
             await update_user(user_id=user['id'], json={"balance": updated_balance})
             if updated_balance < user['limited_balance']:
                 exceeded_amount += json['amount_in_som']
-
-        elif json['category'] == "income":
-            await create_income(user_id=user['id'], json=json)
-            updated_balance += json['amount_in_som']
-            await update_user(user_id=user['id'], json={"balance": updated_balance})
-
         else:
             pass
 
     return {
         "response": "warning" if updated_balance < user['limited_balance'] else "ok",
         "excess_amount": updated_balance - user['limited_balance'],
-        "limit": user['limit']
+        "limit": user['limit'],
+        "ids": added_ids
 }
         
 async def update_limit(chat_id: int, limit: int):
