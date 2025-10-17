@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 import json
 import os
 
-from buttons import BUTTONS_LIST
+from utils.buttons import BUTTONS_LIST
 from utils.utils import add_data
-from texts import specifyTransactionText, specifyDebtText
+from utils.texts import specifyTransactionText, specifyDebtText
 from utils.gpt_agent import finance_prompt
 from .limit import LimitState
 

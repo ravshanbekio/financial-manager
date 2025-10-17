@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 
-from texts import WarningText
+from utils.texts import WarningText
 
 load_dotenv()
 

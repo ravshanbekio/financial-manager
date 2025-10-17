@@ -6,11 +6,11 @@ import json
 import requests
 import os
 
-from buttons import button
-from texts import specifyDebtText, specifyTransactionText
+from utils.buttons import button
+from utils.texts import specifyDebtText, specifyTransactionText
 from utils.gpt_agent import finance_prompt
 from utils.utils import add_data
-from stt import convert_to_text
+from utils.stt import convert_to_text
 
 load_dotenv()
 

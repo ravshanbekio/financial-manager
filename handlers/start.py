@@ -6,7 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 from utils.utils import create_user, get_user, add_data
-from buttons import button
+from utils.buttons import button
 from .limit import LimitState
 
 class IncomeState(StatesGroup):

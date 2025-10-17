@@ -5,7 +5,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 from utils.utils import update_limit, get_user
-from buttons import BUTTONS_LIST, button
+from utils.buttons import BUTTONS_LIST, button
 
 class LimitState(StatesGroup):
     ask_limit_amount = State()
