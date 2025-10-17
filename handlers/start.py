@@ -4,6 +4,7 @@ from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from datetime import datetime
 
 from utils.utils import create_user, get_user, add_data
 from utils.buttons import button
@@ -45,14 +46,15 @@ async def handle_budget(message: Message, state: FSMContext):
     if sliced_message.isdigit():
         data = [
             {
-                "category":"income",
+                "type":"income",
                 "amount":int(sliced_message),
                 "amount_in_som":int(sliced_message),
-                "clean_text":"budget"
+                "description":"budget",
+                "category":"budget",
+                "date": str(datetime.today().date())
             }
         ]
         await add_data(chat_id=message.chat.id, data=data)
-        main_button = await button(chat_id=message.chat.id)
         
         builder = InlineKeyboardBuilder()
         for i in range(1, 11):
